@@ -1,107 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const membersPath = path.join(process.cwd(), 'data', 'members.json');
+import connectDB from '@/lib/mongodb'; // veya senin yolun: ../../../lib/mongodb
+import { Member } from '@/models'; // veya senin yolun: ../../../models
 
 export async function GET() {
   try {
-    if (!fs.existsSync(membersPath)) {
-      return NextResponse.json([]);
-    }
+    await connectDB();
+    
+    // Üyeleri getir (En yeni en üstte)
+    const members = await Member.find().sort({ joinDate: -1 });
 
-    const data = fs.readFileSync(membersPath, 'utf-8');
-    const members = JSON.parse(data);
-    
-    members.sort((a: any, b: any) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime());
-    
-    return NextResponse.json(members);
+    // Frontend için _id -> id dönüşümü (ÇOK ÖNEMLİ)
+    const formattedMembers = members.map(member => ({
+      ...member.toObject(),
+      id: member._id.toString()
+    }));
+
+    return NextResponse.json(formattedMembers);
   } catch (error) {
-    console.error('Members fetch error:', error);
-    return NextResponse.json(
-      { error: 'Üyeler alınırken bir hata oluştu' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Üyeler alınamadı' }, { status: 500 });
   }
 }
 
+// Üye Silme (Lazım olur diye ekliyorum)
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
-    if (!id) {
-      return NextResponse.json(
-        { error: 'ID parametresi gerekli' },
-        { status: 400 }
-      );
-    }
+    if (!id) return NextResponse.json({ error: 'ID gerekli' }, { status: 400 });
 
-    if (!fs.existsSync(membersPath)) {
-      return NextResponse.json(
-        { error: 'Üye bulunamadı' },
-        { status: 404 }
-      );
-    }
+    await connectDB();
+    await Member.findByIdAndDelete(id);
 
-    const members = JSON.parse(fs.readFileSync(membersPath, 'utf-8'));
-    const filteredMembers = members.filter((member: any) => member.id !== parseInt(id));
-
-    fs.writeFileSync(membersPath, JSON.stringify(filteredMembers, null, 2));
-
-    return NextResponse.json(
-      { message: 'Üye başarıyla silindi' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Üye silindi' }, { status: 200 });
   } catch (error) {
-    console.error('Member delete error:', error);
-    return NextResponse.json(
-      { error: 'Üye silinirken bir hata oluştu' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Silme hatası' }, { status: 500 });
   }
 }
-
+// Rol Güncelleme Fonksiyonu
 export async function PATCH(request: NextRequest) {
   try {
     const { id, role } = await request.json();
 
     if (!id || !role) {
-      return NextResponse.json(
-        { error: 'ID ve rol parametreleri gerekli' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ID ve Rol gerekli' }, { status: 400 });
     }
 
-    if (!fs.existsSync(membersPath)) {
-      return NextResponse.json(
-        { error: 'Üye bulunamadı' },
-        { status: 404 }
-      );
-    }
+    await connectDB();
 
-    const members = JSON.parse(fs.readFileSync(membersPath, 'utf-8'));
-    const memberIndex = members.findIndex((member: any) => member.id === parseInt(id));
-
-    if (memberIndex === -1) {
-      return NextResponse.json(
-        { error: 'Üye bulunamadı' },
-        { status: 404 }
-      );
-    }
-
-    members[memberIndex].role = role;
-    fs.writeFileSync(membersPath, JSON.stringify(members, null, 2));
-
-    return NextResponse.json(
-      { message: 'Üye rolü güncellendi', member: members[memberIndex] },
-      { status: 200 }
+    // MongoDB'de bul ve güncelle
+    const updatedMember = await Member.findByIdAndUpdate(
+      id,
+      { role: role },
+      { new: true } // Güncellenmiş halini geri döndür
     );
+
+    if (!updatedMember) {
+      return NextResponse.json({ error: 'Üye bulunamadı' }, { status: 404 });
+    }
+
+    // Frontend'in anlaması için _id -> id dönüşümü
+    const formattedMember = {
+      ...updatedMember.toObject(),
+      id: updatedMember._id.toString()
+    };
+
+    return NextResponse.json({ 
+      message: 'Rol başarıyla güncellendi', 
+      member: formattedMember 
+    }, { status: 200 });
+
   } catch (error) {
-    console.error('Member update error:', error);
-    return NextResponse.json(
-      { error: 'Üye güncellenirken bir hata oluştu' },
-      { status: 500 }
-    );
+    console.error("Rol güncelleme hatası:", error);
+    return NextResponse.json({ error: 'Rol güncellenirken sunucu hatası oluştu' }, { status: 500 });
   }
 }
