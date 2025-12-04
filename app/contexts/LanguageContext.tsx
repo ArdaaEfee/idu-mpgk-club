@@ -47,7 +47,10 @@ const translations = {
     'our_mission': 'Misyonumuz',
     'our_vision': 'Vizyonumuz',
     'view_all_projects': 'Tüm Projeleri Görüntüle',
-    'view_all_events': 'Tüm Etkinlikleri Görüntüle'
+    'view_all_events': 'Tüm Etkinlikleri Görüntüle',
+    'send_success': 'Mesaj başarıyla gönderildi!',
+    'send_error': 'Mesaj gönderme hatası. Lütfen tekrar deneyin.',
+    'sending': 'Gönderiliyor...'
   },
   en: {
     'home': 'Home',
@@ -86,7 +89,10 @@ const translations = {
     'our_mission': 'Our Mission',
     'our_vision': 'Our Vision',
     'view_all_projects': 'View All Projects',
-    'view_all_events': 'View All Events'
+    'view_all_events': 'View All Events',
+    'send_success': 'Message sent successfully!',
+    'send_error': 'Failed to send message. Please try again.',
+    'sending': 'Sending...'
   }
 }
 
