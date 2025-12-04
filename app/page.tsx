@@ -3,9 +3,13 @@ import ProjectCard from './components/ProjectCard'
 import Footer from './components/Footer'
 import { useLanguage } from './contexts/LanguageContext'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function HomePage() {
   const { t, language } = useLanguage()
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const [isLoading, setIsLoading] = useState(false)
+  const [formMessage, setFormMessage] = useState('')
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
@@ -13,6 +17,36 @@ export default function HomePage() {
       return d.toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US')
     }
     return dateStr
+  }
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setFormMessage('')
+    
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      
+      if (response.ok) {
+        setFormMessage(t('send_success') || 'Message sent successfully!')
+        setFormData({ name: '', email: '', message: '' })
+      } else {
+        setFormMessage(t('send_error') || 'Failed to send message.')
+      }
+    } catch (error) {
+      setFormMessage(t('send_error') || 'An error occurred.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const projects = [
@@ -167,20 +201,52 @@ export default function HomePage() {
 
           <div className="max-w-md mx-auto">
             <div className="card p-8">
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleFormSubmit}>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t('name')}</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" />
+                  <input 
+                    type="text" 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t('email')}</label>
-                  <input type="email" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" />
+                  <input 
+                    type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t('message')}</label>
-                  <textarea rows={4} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"></textarea>
+                  <textarea 
+                    rows={4} 
+                    name="message"
+                    value={formData.message}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                  ></textarea>
                 </div>
-                <button type="submit" className="btn-primary w-full">{t('send_message')}</button>
+                <button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="btn-primary w-full disabled:opacity-50"
+                >
+                  {isLoading ? t('sending') || 'Sending...' : t('send_message')}
+                </button>
+                {formMessage && (
+                  <div className={`text-center text-sm ${formMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {formMessage}
+                  </div>
+                )}
               </form>
             </div>
           </div>
