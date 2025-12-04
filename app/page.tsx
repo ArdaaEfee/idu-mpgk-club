@@ -243,7 +243,7 @@ export default function HomePage() {
                   {isLoading ? t('sending') || 'Sending...' : t('send_message')}
                 </button>
                 {formMessage && (
-                  <div className={`text-center text-sm ${formMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <div className={`text-sm text-center animate-message ${formMessage.includes('success') ? 'message-success' : 'message-error'}`}>
                     {formMessage}
                   </div>
                 )}
