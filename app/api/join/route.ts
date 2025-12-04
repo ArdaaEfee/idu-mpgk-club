@@ -2,54 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-// Use /tmp/data on Vercel (writable, ephemeral) or DATA_DIR env override
-const isVercel = !!process.env.VERCEL;
-const dataDir = process.env.DATA_DIR || (isVercel ? path.join('/tmp', 'data') : path.join(process.cwd(), 'data'));
-const membersPath = path.join(dataDir, 'members.json');
-const applicationsPath = path.join(dataDir, 'applications.json');
+const membersPath = path.join(process.cwd(), 'data', 'members.json');
+const applicationsPath = path.join(process.cwd(), 'data', 'applications.json'); // Yeni: Başvurular için ayrı dosya
 
-function ensureDirExists(dir: string) {
+// Başvurular için ayrı veritabanı
+function ensureApplicationsDbExists() {
+  const dir = path.dirname(applicationsPath);
   if (!fs.existsSync(dir)) {
-    try {
-      fs.mkdirSync(dir, { recursive: true });
-    } catch (e) {
-      console.warn('Could not create data dir', dir, e);
-    }
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  if (!fs.existsSync(applicationsPath)) {
+    fs.writeFileSync(applicationsPath, JSON.stringify([], null, 2));
   }
 }
 
-function saveApplication(data: any) {
-  try {
-    ensureDirExists(path.dirname(applicationsPath));
-    let existingData: any[] = [];
-    if (fs.existsSync(applicationsPath)) {
-      try {
-        existingData = JSON.parse(fs.readFileSync(applicationsPath, 'utf-8')) || [];
-      } catch (e) {
-        console.warn('Could not parse applications.json, starting fresh', e);
-        existingData = [];
-      }
-    }
-
-    const newEntry = {
-      id: Date.now(),
-      ...data,
-      timestamp: new Date().toISOString(),
-      status: 'pending'
-    };
-    existingData.push(newEntry);
-
-    try {
-      fs.writeFileSync(applicationsPath, JSON.stringify(existingData, null, 2));
-    } catch (e) {
-      console.warn('Could not write applications.json (filesystem may be read-only):', e);
-    }
-
-    return newEntry;
-  } catch (err) {
-    console.error('saveApplication error', err);
-    return { id: Date.now(), ...data, timestamp: new Date().toISOString(), status: 'pending' };
+function ensureMembersDbExists() {
+  const dir = path.dirname(membersPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
   }
+  if (!fs.existsSync(membersPath)) {
+    fs.writeFileSync(membersPath, JSON.stringify([], null, 2));
+  }
+}
+
+// Başvuruyu kaydet (üye değil, sadece başvuru)
+function saveApplication(data: any) {
+  ensureApplicationsDbExists();
+  const existingData = JSON.parse(fs.readFileSync(applicationsPath, 'utf-8'));
+  const newEntry = {
+    id: Date.now(),
+    ...data,
+    timestamp: new Date().toISOString(),
+    status: 'pending' // Başvuru durumu
+  };
+  existingData.push(newEntry);
+  fs.writeFileSync(applicationsPath, JSON.stringify(existingData, null, 2));
+  return newEntry;
 }
 
 export async function POST(request: NextRequest) {

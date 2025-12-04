@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-const isVercel = !!process.env.VERCEL;
-const dataDir = process.env.DATA_DIR || (isVercel ? path.join('/tmp', 'data') : path.join(process.cwd(), 'data'));
-const applicationsPath = path.join(dataDir, 'applications.json');
-const membersPath = path.join(dataDir, 'members.json');
+const applicationsPath = path.join(process.cwd(), 'data', 'applications.json');
+const membersPath = path.join(process.cwd(), 'data', 'members.json');
 
 // Başvuruları getir
 export async function GET() {
@@ -16,9 +14,9 @@ export async function GET() {
 
     const data = fs.readFileSync(applicationsPath, 'utf-8');
     const applications = JSON.parse(data);
-
+    
     applications.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
+    
     return NextResponse.json(applications);
   } catch (error) {
     console.error('Applications fetch error:', error);
@@ -52,17 +50,12 @@ export async function DELETE(request: NextRequest) {
     const applications = JSON.parse(fs.readFileSync(applicationsPath, 'utf-8'));
     const filteredApplications = applications.filter((app: any) => app.id !== parseInt(id));
 
-    try {
-      // ensure dir
-      const dir = path.dirname(applicationsPath);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(applicationsPath, JSON.stringify(filteredApplications, null, 2));
-    } catch (e) {
-      console.warn('Could not write applications.json; filesystem may be read-only:', e);
-      return NextResponse.json({ error: 'Sunucu dosya sistemi yazma korumalı' }, { status: 500 });
-    }
+    fs.writeFileSync(applicationsPath, JSON.stringify(filteredApplications, null, 2));
 
-    return NextResponse.json({ message: 'Başvuru başarıyla silindi' }, { status: 200 });
+    return NextResponse.json(
+      { message: 'Başvuru başarıyla silindi' },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Application delete error:', error);
     return NextResponse.json(
@@ -107,21 +100,12 @@ export async function PATCH(request: NextRequest) {
     // Üyeler dosyasını hazırla
     const membersDir = path.dirname(membersPath);
     if (!fs.existsSync(membersDir)) {
-      try {
-        fs.mkdirSync(membersDir, { recursive: true });
-      } catch (e) {
-        console.warn('Could not create members dir, filesystem may be read-only:', e);
-      }
+      fs.mkdirSync(membersDir, { recursive: true });
     }
-
-    let members: any[] = [];
+    
+    let members = [];
     if (fs.existsSync(membersPath)) {
-      try {
-        members = JSON.parse(fs.readFileSync(membersPath, 'utf-8'));
-      } catch (e) {
-        console.warn('Could not parse members.json, starting fresh', e);
-        members = [];
-      }
+      members = JSON.parse(fs.readFileSync(membersPath, 'utf-8'));
     }
 
     // Yeni üye oluştur
@@ -130,24 +114,16 @@ export async function PATCH(request: NextRequest) {
       ...application,
       role: role,
       joinDate: new Date().toISOString(),
-      applicationId: application.id
+      applicationId: application.id // Hangi başvurudan geldiği
     };
 
-    // Üye listesine ekle and persist if possible
+    // Üye listesine ekle
     members.push(newMember);
-    try {
-      fs.writeFileSync(membersPath, JSON.stringify(members, null, 2));
-    } catch (e) {
-      console.warn('Could not write members.json; filesystem may be read-only:', e);
-    }
+    fs.writeFileSync(membersPath, JSON.stringify(members, null, 2));
 
     // Başvuruyu sil (artık üye oldu)
     applications.splice(applicationIndex, 1);
-    try {
-      fs.writeFileSync(applicationsPath, JSON.stringify(applications, null, 2));
-    } catch (e) {
-      console.warn('Could not write applications.json; filesystem may be read-only:', e);
-    }
+    fs.writeFileSync(applicationsPath, JSON.stringify(applications, null, 2));
 
     return NextResponse.json(
       { 

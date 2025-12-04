@@ -3,67 +3,37 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 
-// Use writable data directory when possible. On Vercel the build filesystem is read-only,
-// so use `/tmp/data` there (ephemeral) or a custom `DATA_DIR` env var.
-const isVercel = !!process.env.VERCEL;
-const dataDir = process.env.DATA_DIR || (isVercel ? path.join('/tmp', 'data') : path.join(process.cwd(), 'data'));
-const contactsPath = path.join(dataDir, 'contacts.json');
+// İletişim formu veritabanı dosyasının yolu
+const contactsPath = path.join(process.cwd(), 'data', 'contacts.json');
 
-function ensureDirExists(dirPath: string) {
-  if (!fs.existsSync(dirPath)) {
-    try {
-      fs.mkdirSync(dirPath, { recursive: true });
-    } catch (e) {
-      console.warn('Could not create data directory', dirPath, e);
-    }
+// İletişim formu veritabanı dosyasını oluştur
+function ensureContactsDbExists() {
+  const dir = path.dirname(contactsPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  if (!fs.existsSync(contactsPath)) {
+    fs.writeFileSync(contactsPath, JSON.stringify([], null, 2));
   }
 }
 
-// Save contact, but don't fail the whole request if filesystem is read-only.
+// İletişim formu verisini kaydet
 function saveContact(data: any) {
-  try {
-    ensureDirExists(path.dirname(contactsPath));
-    let existingData: any[] = [];
-    if (fs.existsSync(contactsPath)) {
-      try {
-        existingData = JSON.parse(fs.readFileSync(contactsPath, 'utf-8')) || [];
-      } catch (e) {
-        console.warn('Could not parse contacts.json, starting fresh', e);
-        existingData = [];
-      }
-    }
-
-    const newEntry = {
-      id: Date.now(),
-      ...data,
-      timestamp: new Date().toISOString(),
-      read: false
-    };
-    existingData.push(newEntry);
-
-    try {
-      fs.writeFileSync(contactsPath, JSON.stringify(existingData, null, 2));
-    } catch (e) {
-      // Likely running on a read-only filesystem (e.g. Vercel). Log and continue.
-      console.warn('Could not write contacts.json (filesystem may be read-only):', e);
-    }
-
-    return newEntry;
-  } catch (err) {
-    console.error('saveContact error', err);
-    // Return what we can; don't throw so we can continue sending email.
-    return { id: Date.now(), ...data, timestamp: new Date().toISOString(), read: false };
-  }
+  ensureContactsDbExists();
+  const existingData = JSON.parse(fs.readFileSync(contactsPath, 'utf-8'));
+  const newEntry = {
+    id: Date.now(),
+    ...data,
+    timestamp: new Date().toISOString(),
+    read: false // Okunma durumu
+  };
+  existingData.push(newEntry);
+  fs.writeFileSync(contactsPath, JSON.stringify(existingData, null, 2));
+  return newEntry;
 }
 
 // Email gönderici
 async function sendEmail(subject: string, text: string, html?: string) {
-  // If email credentials are not configured, skip sending but log.
-  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn('Email not sent - missing EMAIL_SERVER/EMAIL_USER/EMAIL_PASS env vars');
-    return;
-  }
-
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_SERVER,
     port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -100,9 +70,17 @@ export async function POST(request: NextRequest) {
     // Veriyi kaydet
     const contact = saveContact({ name, email, message });
 
-    // Email gönder (don't fail the request if email sending is not configured or fails)
+    // Email gönder
     const emailSubject = `Yeni İletişim Formu: ${name}`;
-    const emailText = `Yeni bir iletişim formu gönderildi:\n\nİsim: ${name}\nEmail: ${email}\nMesaj: ${message}\n\nGönderim Zamanı: ${new Date(contact.timestamp).toLocaleString('tr-TR')}`;
+    const emailText = `
+Yeni bir iletişim formu gönderildi:
+
+İsim: ${name}
+Email: ${email}
+Mesaj: ${message}
+
+Gönderim Zamanı: ${new Date(contact.timestamp).toLocaleString('tr-TR')}
+    `;
 
     const emailHtml = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -121,15 +99,12 @@ export async function POST(request: NextRequest) {
 </div>
     `;
 
-    try {
-      await sendEmail(emailSubject, emailText, emailHtml);
-    } catch (e) {
-      console.warn('Failed to send contact email:', e);
-      // Do not fail the request; the contact was already saved (or at least created in-memory)
-      return NextResponse.json({ message: 'Mesaj kaydedildi, ancak e-posta gönderilemedi (sunucu yapılandırması eksik).' }, { status: 200 });
-    }
+    await sendEmail(emailSubject, emailText, emailHtml);
 
-    return NextResponse.json({ message: 'Mesajınız başarıyla gönderildi ve kaydedildi!' }, { status: 200 });
+    return NextResponse.json(
+      { message: 'Mesajınız başarıyla gönderildi ve kaydedildi!' },
+      { status: 200 }
+    );
 
   } catch (error) {
     console.error('Contact form error:', error);
