@@ -7,9 +7,15 @@ import { useState } from 'react'
 
 export default function HomePage() {
   const { t, language } = useLanguage()
+  
+  // ESKİSİ: const [formMessage, setFormMessage] = useState('')
+  // YENİSİ: Durumu ve mesajı ayrı ayrı tutuyoruz (Aynı JoinPage'deki gibi)
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
   const [isLoading, setIsLoading] = useState(false)
-  const [formMessage, setFormMessage] = useState('')
+  const [formStatus, setFormStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ 
+    type: null, 
+    message: '' 
+  })
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
@@ -27,7 +33,8 @@ export default function HomePage() {
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    setFormMessage('')
+    // Mesajı sıfırla
+    setFormStatus({ type: null, message: '' })
     
     try {
       const response = await fetch('/api/contact', {
@@ -37,34 +44,46 @@ export default function HomePage() {
       })
       
       if (response.ok) {
-        setFormMessage(t('send_success') || 'Message sent successfully!')
+        // BAŞARILI DURUMU
+        setFormStatus({
+          type: 'success',
+          message: t('send_success') || 'Message sent successfully!'
+        })
         setFormData({ name: '', email: '', message: '' })
       } else {
-        setFormMessage(t('send_error') || 'Failed to send message.')
+        // HATA DURUMU
+        setFormStatus({
+          type: 'error',
+          message: t('send_error') || 'Failed to send message.'
+        })
       }
     } catch (error) {
-      setFormMessage(t('send_error') || 'An error occurred.')
+      // SUNUCU HATASI DURUMU
+      setFormStatus({
+        type: 'error',
+        message: t('send_error') || 'An error occurred.'
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
   const projects = [
-  {
-    title: "KUZGUN - Yenilikçi SİHA Teknolojisi",
-    description: "KUZGUN, ileri seviye mühendislik çözümleriyle geliştirilmiş, yüksek manevra kabiliyetine sahip yerli ve yenilikçi bir SİHA prototipidir. En dikkat çekici özelliği, uçuş sırasında belirli bir dereceye kadar açılıp kapanabilen kanat mekanizması sayesinde farklı görev profillerine uyum sağlayabilmesidir. Bu sayede hem yüksek hızda stabil uçuş hem de dar alanlarda kontrollü manevra imkânı sunar. KUZGUN’un gövde yapısı hafiflik ve dayanıklılık esas alınarak tasarlanmıştır. Otonom uçuş yetenekleri sayesinde görevini minimum insan müdahalesiyle yerine getirebilir. Modüler tasarımı, farklı sensör ve görev yüklerinin kolayca entegre edilebilmesine olanak tanır.",
-    image: "/projects/kuzgun.png", // Gerçek fotoğraf
-    technologies: ["Mikrodenetleyici tabanlı uçuş kontrol sistemi", "Değişken geometrili kanat (mekanik kanat açılma-kapanma sistemi)", "GPS destekli otonom navigasyon","PID tabanlı stabilizasyon algoritmaları", "Gerçek zamanlı telemetri ve yer istasyonu haberleşmesi"],
-    category: t('SİHA')
-  },
-  {
-    title: "KAPLAN - Yerli İnsansız Kara Aracı",
-    description: "KAPLAN, yüksek hız, çeviklik ve görev sürekliliği esas alınarak geliştirilmiş yerli bir İnsansız Kara Aracı (İKA) prototipidir. Zorlu arazi koşullarında kesintisiz hareket edebilmesi için güçlü motor yapısı ve optimize edilmiş süspansiyon sistemine sahiptir. Modüler gövde tasarımı sayesinde farklı görev yükleri kolaylıkla entegre edilebilir. KAPLAN, uzaktan kontrol edilebildiği gibi yarı otonom sürüş modlarıyla da görev yapabilmektedir. Üzerinde bulunan sensörler sayesinde çevresini algılayarak güvenli ilerleme sağlar. Dayanıklı şasi yapısı, darbelere ve dış etkenlere karşı yüksek koruma sunar. Görev esnekliği ve arazi kabiliyetiyle KAPLAN, modern savunma teknolojilerine güçlü bir alternatif olarak öne çıkmaktadır.",
-    image: "/projects/kaplan.png", // Gerçek fotoğraf
-    technologies: ["Mikrodenetleyici tabanlı motor sürücü ve hareket kontrol sistemi", "Uzaktan kumanda ve RF haberleşme teknolojisi", "Ultrasonik / mesafe sensörleriyle çevre algılama", "Yarı otonom sürüş algoritmaları","Gerçek zamanlı telemetri sistemi"],
-    category: t('İKA')
-  }
-]
+    {
+      title: "KUZGUN - Yenilikçi SİHA Teknolojisi",
+      description: "KUZGUN, ileri seviye mühendislik çözümleriyle geliştirilmiş, yüksek manevra kabiliyetine sahip yerli ve yenilikçi bir SİHA prototipidir. En dikkat çekici özelliği, uçuş sırasında belirli bir dereceye kadar açılıp kapanabilen kanat mekanizması sayesinde farklı görev profillerine uyum sağlayabilmesidir. Bu sayede hem yüksek hızda stabil uçuş hem de dar alanlarda kontrollü manevra imkânı sunar. KUZGUN’un gövde yapısı hafiflik ve dayanıklılık esas alınarak tasarlanmıştır. Otonom uçuş yetenekleri sayesinde görevini minimum insan müdahalesiyle yerine getirebilir. Modüler tasarımı, farklı sensör ve görev yüklerinin kolayca entegre edilebilmesine olanak tanır.",
+      image: "/projects/kuzgun.png",
+      technologies: ["Mikrodenetleyici tabanlı uçuş kontrol sistemi", "Değişken geometrili kanat (mekanik kanat açılma-kapanma sistemi)", "GPS destekli otonom navigasyon","PID tabanlı stabilizasyon algoritmaları", "Gerçek zamanlı telemetri ve yer istasyonu haberleşmesi"],
+      category: t('SİHA')
+    },
+    {
+      title: "KAPLAN - Yerli İnsansız Kara Aracı",
+      description: "KAPLAN, yüksek hız, çeviklik ve görev sürekliliği esas alınarak geliştirilmiş yerli bir İnsansız Kara Aracı (İKA) prototipidir. Zorlu arazi koşullarında kesintisiz hareket edebilmesi için güçlü motor yapısı ve optimize edilmiş süspansiyon sistemine sahiptir. Modüler gövde tasarımı sayesinde farklı görev yükleri kolaylıkla entegre edilebilir. KAPLAN, uzaktan kontrol edilebildiği gibi yarı otonom sürüş modlarıyla da görev yapabilmektedir. Üzerinde bulunan sensörler sayesinde çevresini algılayarak güvenli ilerleme sağlar. Dayanıklı şasi yapısı, darbelere ve dış etkenlere karşı yüksek koruma sunar. Görev esnekliği ve arazi kabiliyetiyle KAPLAN, modern savunma teknolojilerine güçlü bir alternatif olarak öne çıkmaktadır.",
+      image: "/projects/kaplan.png",
+      technologies: ["Mikrodenetleyici tabanlı motor sürücü ve hareket kontrol sistemi", "Uzaktan kumanda ve RF haberleşme teknolojisi", "Ultrasonik / mesafe sensörleriyle çevre algılama", "Yarı otonom sürüş algoritmaları","Gerçek zamanlı telemetri sistemi"],
+      category: t('İKA')
+    }
+  ]
 
   const events = [
     {
@@ -242,9 +261,13 @@ export default function HomePage() {
                 >
                   {isLoading ? t('sending') || 'Sending...' : t('send_message')}
                 </button>
-                {formMessage && (
-                  <div className={`text-sm text-center animate-message ${formMessage.includes('success') ? 'message-success' : 'message-error'}`}>
-                    {formMessage}
+                
+                {/* DÜZELTİLEN KISIM: */}
+                {formStatus.message && (
+                  <div className={`text-sm text-center animate-message ${
+                    formStatus.type === 'success' ? 'message-success' : 'message-error'
+                  }`}>
+                    {formStatus.message}
                   </div>
                 )}
               </form>
