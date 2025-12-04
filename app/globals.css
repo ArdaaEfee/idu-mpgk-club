@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Scrollbar'ı tamamen gizle */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  /* Chrome, Safari ve Opera için scrollbar'ı gizle */
+  html::-webkit-scrollbar {
+    display: none;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200;
+    /* Body için de scrollbar'ı gizle */
+    overflow-y: scroll; /* Scroll hala çalışsın */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  /* Chrome, Safari ve Opera için body scrollbar'ı gizle */
+  body::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-idu-blue text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200 dark:bg-blue-600 dark:hover:bg-blue-700;
+  }
+  
+  .btn-secondary {
+    @apply bg-idu-red text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition duration-200 dark:bg-red-600 dark:hover:bg-red-700;
+  }
+  
+  .section-padding {
+    @apply py-16 px-4 sm:px-6 lg:px-8;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; /* Yanlardan padding eklendi */
+  }
+  
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/30;
+    @apply transition-colors duration-700 ease-in-out shadow-sm; /* smoother transitions for bg and shadow */
+  }
+}
+
+@layer utilities {
+  @keyframes breath {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.01); }
+    100% { transform: scale(1); }
+  }
+
+  .animate-breath {
+    animation: breath 2s ease-in-out infinite;
+    will-change: transform;
+  }
+  
+  @keyframes highlightFade {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .animate-highlight {
+    animation: highlightFade 2s ease-in-out forwards;
+  }
+}
