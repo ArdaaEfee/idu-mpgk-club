@@ -10,11 +10,8 @@ export const metadata: Metadata = {
   title: 'IDU MPGK - Mühendislik Projeleri Geliştirme Kulübü',
   description: 'İzmir Demokrasi Üniversitesi Mühendislik Projeleri Geliştirme Kulübü - Mühendislik projeleriyle geleceği yeniliyoruz',
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/logo.png', type: 'image/png' }
-    ],
-    apple: '/logo.png',
+    icon: '/logo.png?v=2',
+    apple: '/logo.png?v=2',
   },
 }
 
