@@ -9,10 +9,8 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'IDU MPGK - Mühendislik Projeleri Geliştirme Kulübü',
   description: 'İzmir Demokrasi Üniversitesi Mühendislik Projeleri Geliştirme Kulübü - Mühendislik projeleriyle geleceği yeniliyoruz',
-  icons: {
-    icon: '/logo.png?v=2',
-    apple: '/logo.png?v=2',
-  },
+  // icons kısmını tamamen kaldırdık. 
+  // Next.js artık app klasöründeki favicon.ico dosyasını otomatik algılayıp kullanacak.
 }
 
 export default function RootLayout({
