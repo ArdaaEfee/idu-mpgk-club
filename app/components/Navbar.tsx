@@ -27,7 +27,7 @@ export default function Navbar() {
           {/* Logo - Sol taraftan boşluk için padding-left */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
-              <Image src="/logo.png" alt="Logo" width={40} height={40} className="object-cover" />
+              <Image src="/favicon.ico" alt="Logo" width={40} height={40} className="object-cover" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">IDU MPGK</h1>
