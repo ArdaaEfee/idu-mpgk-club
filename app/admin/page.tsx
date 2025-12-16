@@ -304,7 +304,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 dark:bg-gray-750 p-4 rounded-md mb-4 text-gray-700 dark:text-gray-300">
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md mb-4 text-gray-700 dark:text-gray-300">
                   {idea.description}
                 </div>
 
