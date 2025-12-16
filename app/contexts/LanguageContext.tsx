@@ -17,6 +17,18 @@ const translations = {
     'events': 'Etkinlikler',
     'contact': 'İletişim',
     'join_club': 'Kulübe Katıl',
+    // --- YENİ EKLENEN KISIMLAR (Fikir Kutusu İçin) ---
+    'idea_box': 'Fikir Kutusu',
+    'share_idea_title': 'Proje Fikrini Paylaş',
+    'share_idea_desc': 'Aklında çılgın bir fikir mi var? IDU MPGK olarak birlikte hayata geçirelim.',
+    'project_title': 'Proje Başlığı',
+    'project_title_placeholder': 'Örn: Otonom Kampüs Robotu',
+    'idea_desc': 'Fikrini Anlat',
+    'idea_desc_placeholder': 'Bu proje ne işe yarayacak? Hangi malzemeler lazım?',
+    'submit_idea': 'Fikri Gönder',
+    'idea_success': 'Harika! Proje fikrin bize ulaştı. Ekibimiz inceleyip dönüş yapacak.',
+    'idea_error': 'Bir hata oluştu. Lütfen tekrar dene.',
+    // --- BİTİŞ ---
     'hero_title': 'IDU Mühendislik Projeleri Geliştirme Kulübü',
     'hero_subtitle': 'İzmir Demokrasi Üniversitesi\'nde yenilikçi projeler, uygulamalı deneyim ve işbirlikçi öğrenme yoluyla geleceğin mühendislerini güçlendiriyoruz.',
     'view_projects': 'Projeleri Görüntüle',
@@ -59,6 +71,18 @@ const translations = {
     'events': 'Events',
     'contact': 'Contact',
     'join_club': 'Join Club',
+    // --- NEW ADDITIONS (For Idea Box) ---
+    'idea_box': 'Idea Box',
+    'share_idea_title': 'Share Your Project Idea',
+    'share_idea_desc': 'Do you have a crazy idea? Let\'s bring it to life as IDU MPGK.',
+    'project_title': 'Project Title',
+    'project_title_placeholder': 'Ex: Autonomous Campus Robot',
+    'idea_desc': 'Describe Your Idea',
+    'idea_desc_placeholder': 'What does this project do?',
+    'submit_idea': 'Submit Idea',
+    'idea_success': 'Great! We received your project idea. Our team will review it soon.',
+    'idea_error': 'An error occurred. Please try again.',
+    // --- END ---
     'hero_title': 'IDU Engineering Projects Development Club',
     'hero_subtitle': 'Empowering future engineers at Izmir Democracy University through innovative projects, hands-on experience, and collaborative learning.',
     'view_projects': 'View Projects',
@@ -133,7 +157,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext)
   if (!context) {
-    // Return default values instead of throwing error
     return {
       language: 'tr' as Language,
       toggleLanguage: () => {},

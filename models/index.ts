@@ -31,7 +31,19 @@ const MemberSchema = new Schema({
   applicationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Application' }
 });
 
-// HATA ÇÖZÜMÜ BURADA: "as any" ekleyerek TypeScript hatalarını susturuyoruz.
+// 4. Proje Fikri Şeması (YENİ EKLENEN KISIM)
+const IdeaSchema = new Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  projectTitle: { type: String, required: true },
+  description: { type: String, required: true },
+  fileLink: { type: String }, // <-- YENİ EKLENDİ (Zorunlu değil)
+  status: { type: String, default: 'new' }, 
+  timestamp: { type: Date, default: Date.now }
+});
+
+// MODELLERİ DIŞARI AKTARMA
 export const Contact = (models.Contact || model('Contact', ContactSchema)) as any;
 export const Application = (models.Application || model('Application', ApplicationSchema)) as any;
 export const Member = (models.Member || model('Member', MemberSchema)) as any;
+export const Idea = (models.Idea || model('Idea', IdeaSchema)) as any; // Yeni export

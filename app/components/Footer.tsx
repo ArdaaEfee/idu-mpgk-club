@@ -27,12 +27,14 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+<div>
             <h3 className="font-bold text-lg mb-4">{t('quick_links')}</h3>
             <ul className="space-y-2">
               <li><Link href="/" className="text-gray-400 hover:text-white transition">{t('home')}</Link></li>
               <li><Link href="/about" className="text-gray-400 hover:text-white transition">{t('about')}</Link></li>
               <li><Link href="/projects" className="text-gray-400 hover:text-white transition">{t('projects')}</Link></li>
+              {/* YENİ EKLENEN SATIR: */}
+              <li><Link href="/ideas" className="text-gray-400 hover:text-white transition">{t('idea_box')}</Link></li>
               <li><Link href="/events" className="text-gray-400 hover:text-white transition">{t('events')}</Link></li>
               <li><Link href="/contact" className="text-gray-400 hover:text-white transition">{t('contact')}</Link></li>
             </ul>
