@@ -87,12 +87,12 @@ export default function HomePage() {
 
   const events = [
     {
-      title: language === 'tr' ? "Kulüp tanıtım günleri" : "Club promotion days",
-      date: "1-5 Aralık 2025",
-      location: language === 'tr' ? "Ana bina, giriş kat" : "Main building, ground floor",
+      title: language === 'tr' ? "" : "",
+      date: "Yakın zamanda etkinliğimiz bulunmamaktadır.",
+      location: language === 'tr' ? "" : "",
       description: language === 'tr' 
-        ? "Kulüp Tanıtım Günleri kapsamında, teknolojiye ve mühendisliğe ilgi duyan herkesi standımıza bekliyoruz!Ekip üyelerimizle birebir sohbet ederek çalışmalarımız hakkında detaylı bilgi alabilirsiniz. Atölye kültürü, yarışma süreçleri ve takım ruhunu birlikte keşfetmek için standımıza uğramayı unutmayın. Aramıza katıl, geleceği birlikte üretelim!"
-        : "As part of the Club Promotion Days, we invite everyone who is interested in technology and engineering to visit our booth! You can have one-on-one conversations with our team members and get detailed information about our projects and activities. Don’t forget to stop by our booth to discover our workshop culture, competition processes, and team spirit. Join us, let’s build the future together!"
+        ? ""
+        : ""
     }
   ]
 
